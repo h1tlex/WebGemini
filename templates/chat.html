@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>webAI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+
+        @font-face {
+            font-family: 'CustomFont';
+            src: url('/static/fonts/Code-Regular.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'minecraft';
+            src: url('/static/fonts/Minecraft.ttf') format('truetype');
+        }
+
+        body {
+            font-family: 'CustomFont';
+            background-color: #181818;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+        h1 {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        p {
+            font-family: 'minecraft';
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #282828;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            height: 70%;
+        }
+        .message {
+            font-family: 'minecraft';
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .user-message {
+            font-family: 'minecraft';
+            background-color: #4CAF50;
+            color: #fff;
+            align-self: flex-end;
+        }
+        .bot-response {
+            font-family: 'minecraft';
+            background-color: #555;
+            color: #fff;
+            align-self: flex-start;
+        }
+        form {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        input[type="text"] {
+            width: 500px;
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 1em;
+            background-color: #303030; /* Space grey background */
+            color: white; /* White text */
+        }
+        button {
+            font-family: 'minecraft';
+            background-color: #2bff00;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover{
+            background-color: #2bff00;
+            color: #162c01;
+        }
+        .back-button {
+            margin-bottom: 20px;
+            text-decoration: none;
+            background-color: #162c01;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px; /* Space between the icon and text */
+        }
+        .back-button:hover {
+            background-color: #2bff00;
+            color: #162c01;
+        }
+        .back-button i {
+            font-size: 1.2em; /* Adjust icon size */
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+    </a>
+    <h1>webAI</h1>
+    <div class="chat-container">
+        <!-- Loop through messages passed from Flask -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message user-message">{{ message.user }}</div>
+                <div class="message bot-response">{{ message.bot }}</div>
+            {% endfor %}
+        {% else %}
+            <p>Start a conversation by typing a message below!</p>
+        {% endif %}
+    </div>
+    <form id="chat-form">
+        <input type="text" id="user_input" name="user_input" placeholder="Type your message..." required>
+        <button type="submit">Send</button>
+    </form>
+
+    <script>
+        // Focus the input field after submitting the form
+        document.getElementById("chat-form").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent page reload
+
+            const userInput = document.getElementById("user_input").value;
+            const chatContainer = document.querySelector(".chat-container");
+
+            // Send the message to the server using fetch
+            fetch("/session", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ user_input: userInput }),
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                // Append the user's message
+                const userMessage = document.createElement("div");
+                userMessage.classList.add("message", "user-message");
+                userMessage.textContent = userInput;
+                chatContainer.appendChild(userMessage);
+
+                // Append the bot's response
+                const botMessage = document.createElement("div");
+                botMessage.classList.add("message", "bot-response");
+                botMessage.textContent = data.response;
+                chatContainer.appendChild(botMessage);
+
+                // Scroll to the bottom of the chat container
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                // Clear and focus the input field
+                document.getElementById("user_input").value = "";
+                document.getElementById("user_input").focus();
+            })
+            .catch((error) => console.error("Error:", error));
+        });
+    </script>
+</body>
+</html>
+
