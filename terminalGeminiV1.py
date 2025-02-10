@@ -11,7 +11,6 @@ from PIL import Image
 # ~ Note that this version has no chat history ~
 
 
-print("hello")
 argc = len(sys.argv)
 # Check for correct argument count
 if not 2 <= argc <= 3:
